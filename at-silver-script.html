@@ -1,0 +1,90 @@
+<link rel="import" href="../tangere/tangere.html">
+
+<dom-module id="at-silver-script">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'at-silver-script',
+      properties: {
+        script: {
+          type: String,
+          value: ""
+        },
+        value: {
+          type: String,
+          value: "",
+          readOnly: true
+        }
+      },
+      $meta: [{
+        title: "Script",
+        type: "element",
+        xtype: "at-silver-script",
+        events: [ 'value-changed' ]
+      }],
+      ready: function() {
+
+      },
+      set value(value) {},
+      actionListener: function(event) {
+        function isString(obj) {
+          return Object.prototype.toString.call(obj) === "[object String]";
+        }
+
+        function isEmptyString(obj) {
+          return isString(obj) && obj === "";
+        }
+
+        function isObject(obj) {
+          return Object.prototype.toString.call(obj) === "[object Object]";
+        }
+
+        var curlyBraceRegex = /\{\{|\}\}/gm;
+        this._setValue("");
+
+        if (isEmptyString(this.template) || // if template is empty string or anything else different from non empty string, ie array or object that is invalid template
+          !curlyBraceRegex.test(this.template) || // if template is a non empty string but doesn't have {{ or }} that means it doesn't have anything to replace
+          isEmptyString(event.type) || // if event.ty8pe is an emtpy string or anything else different from non empty string, ie array or object that is invalid template
+          !isObject(event.detail) || // if event.detail is not an object, we need this to be an object
+          !isObject(event.detail.model) || // if event.detail.model is not an object, we need this to be an object
+          !isObject(event.detail.model.state) // if event.detail.model.state is not an object, we need this to be an object
+        )
+        {
+          return;
+        }
+
+        var state = event.detail.model.state;
+        var template = this.template;
+        var templates = [];
+
+        var matchedParts = template.match(/\{\{([\w]+)\}\}/gm);
+        if (!matchedParts) {
+          return;
+        }
+
+        var valueProto = template;
+
+        matchedParts.forEach(function (matchedPart, index) {
+          var fieldName = matchedPart.substring(matchedPart.indexOf('{{')+2, matchedPart.indexOf('}}'));
+          if (state.hasOwnProperty(fieldName)) {
+            valueProto = valueProto.replace(matchedPart, state[fieldName]);
+          }
+        });
+
+        if (this.value === valueProto) {
+          return;
+        }
+
+        this._setValue(valueProto);
+        this.fire('value-changed', { value: valueProto });
+      }
+    });
+  </script>
+</dom-module>

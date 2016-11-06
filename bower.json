@@ -1,0 +1,8 @@
+{
+  "name": "at-silver-script",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "version": "0.0.0.1"
+}
